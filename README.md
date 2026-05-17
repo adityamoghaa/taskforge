@@ -4,7 +4,7 @@
 
 ## 🌐 Live Demo
 
-**Deployed Link:** `<!-- TODO: Add deployed app URL here -->`
+**Deployed Link:** `https://taskforge-lx52.onrender.com/`
 
 ## ✨ Features
 
