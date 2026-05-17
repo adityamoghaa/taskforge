@@ -12,6 +12,8 @@ import pandas as pd
 import numpy as np
 from functools import wraps
 import os
+import socket
+from urllib.parse import urlparse
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -32,10 +34,19 @@ socketio = SocketIO(
 # ─── Database ──────────────────────────────────────────────────────────────
 
 def get_db():
-    database_url = os.getenv("DATABASE_URL")
+    database_url = os.getenv("SUPABASE_POOLER_URL") or os.getenv("DATABASE_URL")
     if database_url:
-        # Supabase requires SSL
-        return psycopg2.connect(database_url, sslmode="require")
+        # Supabase requires SSL and Render may need explicit IPv4 resolution.
+        connect_kwargs = {"sslmode": "require", "connect_timeout": 10}
+        parsed = urlparse(database_url)
+        if parsed.hostname:
+            try:
+                infos = socket.getaddrinfo(parsed.hostname, None, socket.AF_INET, socket.SOCK_STREAM)
+                if infos:
+                    connect_kwargs["hostaddr"] = infos[0][4][0]
+            except socket.gaierror:
+                pass
+        return psycopg2.connect(database_url, **connect_kwargs)
     # local fallback
     return psycopg2.connect(
         host=os.getenv("DB_HOST", "localhost"),
@@ -43,6 +54,7 @@ def get_db():
         user=os.getenv("DB_USER", "postgres"),
         password=os.getenv("DB_PASSWORD", ""),
         port=os.getenv("DB_PORT", "5432"),
+        connect_timeout=10,
     )
 
 def init_db():

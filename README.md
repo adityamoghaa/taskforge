@@ -90,6 +90,9 @@ App runs at: **http://localhost:5000**
 
 ```env
 SECRET_KEY=your-super-secret-key-change-this
+DATABASE_URL=postgresql://...
+# For Supabase on Render, prefer the "Connection Pooling" URL (IPv4-friendly)
+SUPABASE_POOLER_URL=postgresql://...
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=taskforge
