@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TaskForge — Forge Your Productivity</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#070d0b;--surface:#0c1814;--card:#101f18;--border:#1a3528;--accent:#10b981;--a2:#34d399;--a3:#6ee7b7;--text:#f0fdf4;--muted:#52796f;--r:12px;--grad:linear-gradient(135deg,#10b981 0%,#059669 55%,#047857 100%);}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");}
+.orb{position:fixed;border-radius:50%;filter:blur(160px);pointer-events:none;z-index:0;}
+.o1{width:800px;height:800px;background:radial-gradient(circle,rgba(16,185,129,.18) 0%,transparent 70%);top:-320px;left:-260px;animation:f1 20s ease-in-out infinite alternate;}
+.o2{width:550px;height:550px;background:radial-gradient(circle,rgba(4,120,87,.14) 0%,transparent 70%);bottom:-200px;right:-150px;animation:f2 24s ease-in-out infinite alternate;}
+.o3{width:360px;height:360px;background:radial-gradient(circle,rgba(110,231,183,.07) 0%,transparent 70%);top:48%;left:54%;animation:f1 16s ease-in-out infinite alternate;}
+@keyframes f1{from{transform:translate(0,0);}to{transform:translate(32px,24px);}}
+@keyframes f2{from{transform:translate(0,0);}to{transform:translate(-26px,-32px);}}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:18px 64px;background:rgba(7,13,11,.82);backdrop-filter:blur(24px);border-bottom:1px solid rgba(16,185,129,.09);}
+.logo{font-family:'DM Serif Display',serif;font-size:1.6rem;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:10px;}
+.logo-mark{width:34px;height:34px;border-radius:9px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:1rem;box-shadow:0 4px 18px rgba(16,185,129,.38);}
+.logo em{font-style:normal;background:linear-gradient(135deg,var(--a2) 0%,var(--a3) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.nav-right{display:flex;gap:10px;align-items:center;}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 22px;border-radius:9px;font-size:.875rem;font-weight:500;cursor:pointer;transition:all .2s;border:none;font-family:'DM Sans',sans-serif;text-decoration:none;}
+.btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border);}
+.btn-ghost:hover{border-color:var(--accent);color:var(--a2);}
+.btn-primary{background:var(--grad);color:#fff;box-shadow:0 4px 20px rgba(16,185,129,.28);}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(16,185,129,.42);}
+.btn-lg{padding:14px 36px;font-size:1rem;border-radius:11px;}
+.hero{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:130px 24px 90px;}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.22);color:var(--a3);padding:7px 18px;border-radius:999px;font-size:.8rem;font-weight:500;margin-bottom:40px;animation:up .7s ease both;}
+.eyebrow-dot{width:7px;height:7px;border-radius:50%;background:var(--a2);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.25;}}
+h1{font-family:'DM Serif Display',serif;font-size:clamp(3.4rem,8vw,7rem);line-height:1.02;letter-spacing:-.028em;margin-bottom:26px;animation:up .7s .1s ease both;}
+.gt{background:linear-gradient(135deg,#6ee7b7 0%,#34d399 35%,#10b981 68%,#059669 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.sub{max-width:540px;color:var(--muted);font-size:1.08rem;line-height:1.78;margin-bottom:50px;animation:up .7s .2s ease both;}
+.hero-btns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;animation:up .7s .3s ease both;}
+@keyframes up{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:translateY(0);}}
+.mockup-wrap{position:relative;z-index:1;max-width:940px;margin:90px auto 0;padding:0 24px;animation:up .8s .45s ease both;}
+.mockup-halo{position:absolute;inset:-70px;border-radius:40px;background:radial-gradient(ellipse at 50% 38%,rgba(16,185,129,.12) 0%,transparent 65%);pointer-events:none;}
+.mockup{position:relative;background:var(--surface);border:1px solid rgba(16,185,129,.16);border-radius:20px;overflow:hidden;box-shadow:0 56px 130px rgba(0,0,0,.8),0 0 0 1px rgba(16,185,129,.06),inset 0 1px 0 rgba(255,255,255,.04);}
+.mbar{background:var(--card);padding:13px 20px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);}
+.wd{width:12px;height:12px;border-radius:50%;}.wr{background:#f43f5e;}.wy{background:#f59e0b;}.wg{background:#10b981;}
+.murl{flex:1;text-align:center;font-size:.76rem;color:var(--muted);background:rgba(16,185,129,.05);border:1px solid var(--border);border-radius:6px;padding:4px 12px;max-width:250px;margin:0 auto;}
+.mbody{padding:22px;display:grid;grid-template-columns:180px 1fr;gap:18px;min-height:295px;}
+.msb{display:flex;flex-direction:column;gap:5px;}
+.msb-logo{font-family:'DM Serif Display',serif;font-size:1rem;padding:2px 10px 14px;color:var(--text);}
+.msb-logo em{font-style:normal;color:var(--a2);}
+.mnav{padding:8px 11px;border-radius:8px;font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:8px;}
+.mnav.on{background:rgba(16,185,129,.13);color:var(--a2);font-weight:500;}
+.mmain{display:flex;flex-direction:column;gap:12px;}
+.mstats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;}
+.ms{background:linear-gradient(145deg,rgba(16,185,129,.07),var(--card));border:1px solid var(--border);border-radius:9px;padding:12px;}
+.ms-v{font-size:1.45rem;font-weight:600;color:var(--a2);}.ms-l{font-size:.68rem;color:var(--muted);margin-top:2px;}
+.mtasks{display:flex;flex-direction:column;gap:7px;}
+.mtask{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:10px 14px;display:flex;align-items:center;gap:10px;}
+.mdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dh{background:#f43f5e;}.dm{background:#f59e0b;}.dl{background:#10b981;}
+.mtask-t{font-size:.8rem;flex:1;}
+.mbadge{font-size:.68rem;padding:3px 9px;border-radius:999px;font-weight:500;}
+.bdn{background:rgba(16,185,129,.14);color:#34d399;}.bpd{background:rgba(245,158,11,.14);color:#f59e0b;}.bip{background:rgba(110,231,183,.1);color:#6ee7b7;}
+.mtoggle{display:flex;gap:3px;flex-shrink:0;}
+.mtoggle span{font-size:.62rem;padding:3px 7px;border-radius:5px;cursor:pointer;}
+.tact{background:rgba(16,185,129,.18);color:var(--a2);font-weight:600;}
+.tinact{background:rgba(255,255,255,.04);color:var(--muted);}
+.strip{position:relative;z-index:1;padding:52px 24px;margin-top:80px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:rgba(16,185,129,.02);}
+.strip-lbl{text-align:center;color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.15em;margin-bottom:30px;}
+.strip-logos{display:flex;justify-content:center;align-items:center;gap:30px;flex-wrap:wrap;}
+.ti{display:flex;flex-direction:column;align-items:center;gap:7px;}
+.tc{width:52px;height:52px;border-radius:13px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.4rem;transition:.25s;}
+.ti:hover .tc{border-color:var(--accent);background:rgba(16,185,129,.1);transform:translateY(-4px);box-shadow:0 8px 24px rgba(16,185,129,.16);}
+.ti span{font-size:.7rem;color:var(--muted);font-weight:500;}
+.sec{position:relative;z-index:1;padding:96px 24px;}
+.sec-lbl{text-align:center;font-size:.72rem;color:var(--a2);text-transform:uppercase;letter-spacing:.15em;margin-bottom:12px;font-weight:600;}
+h2{font-family:'DM Serif Display',serif;font-size:clamp(2rem,4vw,3rem);text-align:center;margin-bottom:12px;line-height:1.14;}
+.sec-sub{text-align:center;color:var(--muted);max-width:460px;margin:0 auto 56px;line-height:1.74;font-size:.92rem;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(275px,1fr));gap:16px;max-width:1020px;margin:0 auto;}
+.fc{background:linear-gradient(145deg,#101f18,#0c1814);border:1px solid var(--border);border-radius:var(--r);padding:28px;transition:.25s;position:relative;overflow:hidden;}
+.fc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--grad);opacity:0;transition:.3s;}
+.fc:hover{border-color:rgba(16,185,129,.28);transform:translateY(-5px);box-shadow:0 20px 48px rgba(0,0,0,.35),0 0 0 1px rgba(16,185,129,.07);}
+.fc:hover::before{opacity:1;}
+.ficon{width:42px;height:42px;border-radius:10px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.16);display:flex;align-items:center;justify-content:center;font-size:1.15rem;margin-bottom:15px;}
+.fc h3{font-size:1rem;margin-bottom:8px;font-weight:600;}.fc p{color:var(--muted);font-size:.855rem;line-height:1.66;}
+.cta{position:relative;z-index:1;padding:110px 24px;text-align:center;}
+.cta-box{max-width:600px;margin:0 auto;background:linear-gradient(135deg,rgba(16,185,129,.1) 0%,rgba(4,120,87,.04) 100%);border:1px solid rgba(16,185,129,.16);border-radius:22px;padding:58px 40px;box-shadow:0 0 80px rgba(16,185,129,.05),inset 0 1px 0 rgba(16,185,129,.1);}
+.cta-box h2{margin-bottom:13px;}.cta-box p{color:var(--muted);margin-bottom:32px;line-height:1.74;font-size:.95rem;}
+footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:30px 64px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;}
+.ft-logo{font-family:'DM Serif Display',serif;font-size:1.15rem;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:8px;}
+.ft-lm{width:26px;height:26px;border-radius:7px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:.8rem;}
+.ft-logo em{font-style:normal;background:linear-gradient(135deg,var(--a2),var(--a3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.ft-credit{font-size:.82rem;color:var(--muted);}.ft-credit strong{color:var(--a2);font-weight:600;}
+.overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.8);backdrop-filter:blur(12px);align-items:center;justify-content:center;}
+.overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid rgba(16,185,129,.18);border-radius:18px;padding:36px;width:100%;max-width:410px;box-shadow:0 48px 96px rgba(0,0,0,.65);animation:up .28s ease;position:relative;}
+.modal-logo{font-family:'DM Serif Display',serif;font-size:1.4rem;display:flex;align-items:center;gap:9px;margin-bottom:4px;}
+.ml-mark{width:28px;height:28px;border-radius:7px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:.85rem;}
+.modal-logo em{font-style:normal;background:linear-gradient(135deg,var(--a2),var(--a3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.modal>p{color:var(--muted);font-size:.84rem;margin-bottom:24px;}
+.tabs{display:flex;background:var(--card);border:1px solid var(--border);border-radius:9px;padding:3px;margin-bottom:22px;}
+.tab{flex:1;text-align:center;padding:9px;border-radius:7px;cursor:pointer;font-size:.855rem;font-weight:500;color:var(--muted);transition:.2s;}
+.tab.on{background:var(--grad);color:#fff;box-shadow:0 4px 12px rgba(16,185,129,.26);}
+.fg{margin-bottom:13px;}
+label{display:block;font-size:.76rem;color:var(--muted);margin-bottom:5px;font-weight:500;}
+input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.875rem;outline:none;transition:.2s;}
+input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(16,185,129,.1);}
+.modal .btn-primary{width:100%;justify-content:center;margin-top:5px;padding:12px;}
+.xbtn{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--muted);width:27px;height:27px;border-radius:7px;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;}
+.xbtn:hover{color:var(--text);border-color:var(--accent);}
+.fp{display:none;}.fp.on{display:block;}
+.err{color:#f43f5e;font-size:.78rem;margin-top:6px;min-height:16px;}
+@media(max-width:768px){nav{padding:16px 20px;}.mbody{grid-template-columns:1fr;}.msb{display:none;}footer{padding:22px 20px;}.cta-box{padding:38px 22px;}}
+</style>
+</head>
+<body>
+<div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+
+<nav>
+  <a href="/" class="logo"><div class="logo-mark">⚒️</div>Task<em>Forge</em></a>
+  <div class="nav-right">
+    <button class="btn btn-ghost" onclick="openModal('login')">Log In</button>
+    <button class="btn btn-primary" onclick="openModal('register')">Get Started →</button>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="eyebrow"><div class="eyebrow-dot"></div> Real-time Task Management</div>
+  <h1>Forge your<br/><span class="gt">productivity</span></h1>
+  <p class="sub">A powerful task manager with live WebSocket updates, Pandas-powered analytics, and a clean dashboard — built to keep you in flow.</p>
+  <div class="hero-btns">
+    <button class="btn btn-primary btn-lg" onclick="openModal('register')">Start Forging →</button>
+    <button class="btn btn-ghost btn-lg" onclick="openModal('login')">Log In</button>
+  </div>
+</section>
+
+<div class="mockup-wrap">
+  <div class="mockup-halo"></div>
+  <div class="mockup">
+    <div class="mbar">
+      <div class="wd wr"></div><div class="wd wy"></div><div class="wd wg"></div>
+      <div class="murl">taskforge.app/dashboard</div>
+    </div>
+    <div class="mbody">
+      <div class="msb">
+        <div class="msb-logo">Task<em>Forge</em></div>
+        <div class="mnav on">📋 &nbsp;Tasks</div>
+        <div class="mnav">📊 &nbsp;Analytics</div>
+        <div class="mnav">🟢 &nbsp;Live Feed</div>
+      </div>
+      <div class="mmain">
+        <div class="mstats">
+          <div class="ms"><div class="ms-v">12</div><div class="ms-l">Total Tasks</div></div>
+          <div class="ms"><div class="ms-v">8</div><div class="ms-l">Completed</div></div>
+          <div class="ms"><div class="ms-v">66%</div><div class="ms-l">Done Rate</div></div>
+        </div>
+        <div class="mtasks">
+          <div class="mtask"><div class="mdot dh"></div><div class="mtask-t">Fix authentication middleware</div><div class="mtoggle"><span class="tinact">Pending</span><span class="tact">Active</span><span class="tinact">Done</span></div></div>
+          <div class="mtask"><div class="mdot dm"></div><div class="mtask-t">Write analytics module</div><div class="mtoggle"><span class="tact">Pending</span><span class="tinact">Active</span><span class="tinact">Done</span></div></div>
+          <div class="mtask"><div class="mdot dl"></div><div class="mtask-t">Deploy to production server</div><div class="mtoggle"><span class="tinact">Pending</span><span class="tinact">Active</span><span class="tact">Done</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="strip">
+  <p class="strip-lbl">Built with precision using</p>
+  <div class="strip-logos">
+    <div class="ti"><div class="tc">🐍</div><span>Python</span></div>
+    <div class="ti"><div class="tc">🌶️</div><span>Flask</span></div>
+    <div class="ti"><div class="tc">🐘</div><span>PostgreSQL</span></div>
+    <div class="ti"><div class="tc">🔌</div><span>WebSockets</span></div>
+    <div class="ti"><div class="tc">🐼</div><span>Pandas</span></div>
+    <div class="ti"><div class="tc">🔢</div><span>NumPy</span></div>
+    <div class="ti"><div class="tc">🎨</div><span>HTML / CSS</span></div>
+  </div>
+</div>
+
+<section class="sec">
+  <div class="sec-lbl">Features</div>
+  <h2>Everything you need<br/>to stay in flow</h2>
+  <p class="sec-sub">Built with precision — no bloat, just things that work.</p>
+  <div class="grid">
+    <div class="fc"><div class="ficon">🔐</div><h3>Secure Auth</h3><p>Register and login with hashed passwords. Every route and API is protected — your data stays yours.</p></div>
+    <div class="fc"><div class="ficon">⚡</div><h3>Full REST API</h3><p>Add, update, delete, and list tasks with clean JSON endpoints. Filter by priority or status instantly.</p></div>
+    <div class="fc"><div class="ficon">🐘</div><h3>PostgreSQL Storage</h3><p>Normalized schema with user and task tables. Foreign keys, constraints, and indexes — properly designed.</p></div>
+    <div class="fc"><div class="ficon">📊</div><h3>Smart Analytics</h3><p>Pandas and NumPy compute live stats: completion rate, priority breakdown, and daily task averages.</p></div>
+    <div class="fc"><div class="ficon">🟢</div><h3>Real-time Updates</h3><p>WebSocket events push task changes and analytics live to your dashboard the instant they happen.</p></div>
+    <div class="fc"><div class="ficon">🎛️</div><h3>Inline Status Toggle</h3><p>Flip tasks between Pending, In Progress, and Completed right from the list — no modal, no friction.</p></div>
+  </div>
+</section>
+
+<section class="cta">
+  <div class="cta-box">
+    <h2>Ready to forge?</h2>
+    <p>Jump in and start managing your tasks with real-time updates, smart analytics, and a dashboard that gets out of your way.</p>
+    <button class="btn btn-primary btn-lg" onclick="openModal('register')">Create Your Account →</button>
+  </div>
+</section>
+
+<footer>
+  <a href="/" class="ft-logo"><div class="ft-lm">⚒️</div>Task<em>Forge</em></a>
+  <span class="ft-credit">Built with precision by <strong>Aditya Mogha</strong></span>
+  <div style="display:flex;gap:20px;">
+    <a href="#" onclick="openModal('login');return false;" style="font-size:.82rem;color:var(--muted);text-decoration:none;">Log In</a>
+    <a href="#" onclick="openModal('register');return false;" style="font-size:.82rem;color:var(--muted);text-decoration:none;">Register</a>
+  </div>
+</footer>
+
+<div class="overlay" id="authModal">
+  <div class="modal">
+    <button class="xbtn" onclick="closeModal()">×</button>
+    <div class="modal-logo"><div class="ml-mark">⚒️</div>Task<em>Forge</em></div>
+    <p>Sign in or create your account</p>
+    <div class="tabs">
+      <div class="tab on" onclick="switchTab('login')">Log In</div>
+      <div class="tab" onclick="switchTab('register')">Register</div>
+    </div>
+    <div class="fp on" id="p-login">
+      <div class="fg"><label>Username</label><input type="text" id="l-user" placeholder="your_username" autocomplete="username"/></div>
+      <div class="fg"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password"/></div>
+      <div class="err" id="l-err"></div>
+      <button class="btn btn-primary" onclick="doLogin()">Log In →</button>
+    </div>
+    <div class="fp" id="p-register">
+      <div class="fg"><label>Username</label><input type="text" id="r-user" placeholder="choose_a_username" autocomplete="username"/></div>
+      <div class="fg"><label>Email</label><input type="email" id="r-email" placeholder="you@example.com" autocomplete="email"/></div>
+      <div class="fg"><label>Password</label><input type="password" id="r-pass" placeholder="min 6 characters" autocomplete="new-password"/></div>
+      <div class="err" id="r-err"></div>
+      <button class="btn btn-primary" onclick="doRegister()">Create Account →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openModal(t='login'){document.getElementById('authModal').classList.add('open');switchTab(t);}
+function closeModal(){document.getElementById('authModal').classList.remove('open');}
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('on',['login','register'][i]===t));
+  document.querySelectorAll('.fp').forEach(el=>el.classList.remove('on'));
+  document.getElementById('p-'+t).classList.add('on');
+}
+document.getElementById('authModal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+async function doLogin(){
+  const username=document.getElementById('l-user').value.trim();
+  const password=document.getElementById('l-pass').value;
+  document.getElementById('l-err').textContent='';
+  try{const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});const d=await r.json();if(!r.ok)return document.getElementById('l-err').textContent=d.error;window.location='/dashboard';}
+  catch(e){document.getElementById('l-err').textContent='Network error.';}
+}
+async function doRegister(){
+  const username=document.getElementById('r-user').value.trim();
+  const email=document.getElementById('r-email').value.trim();
+  const password=document.getElementById('r-pass').value;
+  document.getElementById('r-err').textContent='';
+  try{const r=await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,email,password})});const d=await r.json();if(!r.ok)return document.getElementById('r-err').textContent=d.error;window.location='/dashboard';}
+  catch(e){document.getElementById('r-err').textContent='Network error.';}
+}
+</script>
+</body>
+</html>

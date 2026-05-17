@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TaskForge — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+<style>
+:root{--bg:#070d0b;--surface:#0c1814;--card:#101f18;--border:#1a3528;--accent:#10b981;--a2:#34d399;--a3:#6ee7b7;--red:#f43f5e;--yellow:#f59e0b;--text:#f0fdf4;--muted:#52796f;--r:11px;--grad:linear-gradient(135deg,#10b981 0%,#059669 55%,#047857 100%);}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;}
+
+/* SIDEBAR */
+.sidebar{width:230px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:20px 13px;position:fixed;top:0;left:0;bottom:0;z-index:50;}
+.logo{font-family:'DM Serif Display',serif;font-size:1.35rem;color:var(--text);display:flex;align-items:center;gap:9px;padding:4px 8px 22px;}
+.logo-mark{width:32px;height:32px;border-radius:8px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:.95rem;box-shadow:0 4px 14px rgba(16,185,129,.35);}
+.logo em{font-style:normal;background:linear-gradient(135deg,var(--a2),var(--a3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.live-badge{display:flex;align-items:center;gap:7px;font-size:.72rem;color:var(--a2);padding:7px 11px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.14);border-radius:8px;margin-bottom:16px;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--a2);animation:pulse 1.6s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.2;}}
+.nav-sec{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.13em;padding:0 8px;margin-bottom:7px;margin-top:2px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:9px;font-size:.855rem;color:var(--muted);cursor:pointer;margin-bottom:2px;transition:.18s;}
+.nav-item:hover{background:rgba(16,185,129,.06);color:var(--text);}
+.nav-item.active{background:rgba(16,185,129,.13);color:var(--a2);font-weight:500;}
+.nav-icon{width:20px;text-align:center;font-size:.9rem;}
+.sb-bottom{margin-top:auto;}
+.user-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px 12px;display:flex;align-items:center;gap:10px;}
+.avatar{width:32px;height:32px;border-radius:8px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.88rem;color:#fff;flex-shrink:0;box-shadow:0 3px 10px rgba(16,185,129,.28);}
+.user-info{flex:1;min-width:0;}
+.user-name{font-size:.86rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.logout-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.75rem;padding:4px 5px;border-radius:5px;transition:.2s;}
+.logout-btn:hover{color:var(--red);}
+
+/* MAIN */
+.main{margin-left:230px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{padding:17px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:rgba(12,24,20,.92);backdrop-filter:blur(16px);position:sticky;top:0;z-index:40;}
+.topbar h1{font-family:'DM Serif Display',serif;font-size:1.5rem;}
+.topbar-right{display:flex;gap:10px;align-items:center;}
+.topbar-user{font-size:.82rem;color:var(--muted);}
+.topbar-user strong{color:var(--a2);}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 17px;border-radius:8px;font-size:.845rem;font-weight:500;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:.2s;}
+.btn-primary{background:var(--grad);color:#fff;box-shadow:0 4px 16px rgba(16,185,129,.24);}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(16,185,129,.36);}
+.btn-ghost{background:var(--card);color:var(--text);border:1px solid var(--border);}
+.btn-ghost:hover{border-color:var(--accent);color:var(--a2);}
+.btn-danger{background:rgba(244,63,94,.1);color:var(--red);border:1px solid rgba(244,63,94,.2);}
+.btn-danger:hover{background:rgba(244,63,94,.18);}
+.btn-sm{padding:5px 10px;font-size:.76rem;}
+.btn-icon{padding:6px 8px;font-size:.82rem;}
+
+/* CONTENT */
+.content{padding:26px 28px;flex:1;}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:13px;margin-bottom:22px;}
+.stat-card{background:linear-gradient(145deg,rgba(16,185,129,.07) 0%,var(--card) 100%);border:1px solid var(--border);border-radius:var(--r);padding:17px;transition:.2s;}
+.stat-card:hover{border-color:rgba(16,185,129,.26);}
+.stat-icon{font-size:1.15rem;margin-bottom:9px;}
+.stat-val{font-size:1.85rem;font-weight:600;line-height:1;margin-bottom:4px;color:var(--a2);}
+.stat-label{color:var(--muted);font-size:.74rem;}
+.stat-bar{height:3px;background:var(--border);border-radius:2px;margin-top:11px;overflow:hidden;}
+.stat-fill{height:100%;border-radius:2px;background:var(--grad);transition:width .65s ease;}
+
+/* FILTERS */
+.filters{display:flex;gap:9px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.filter-label{color:var(--muted);font-size:.82rem;}
+select{background:var(--card);border:1px solid var(--border);color:var(--text);padding:8px 13px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.82rem;outline:none;cursor:pointer;transition:.2s;}
+select:focus{border-color:var(--accent);}
+
+/* TASK LIST */
+.tasks-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.tasks-header{padding:13px 17px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.tasks-header h3{font-size:.93rem;font-weight:600;}
+.tasks-count{font-size:.75rem;color:var(--muted);background:rgba(16,185,129,.07);padding:3px 10px;border-radius:999px;border:1px solid rgba(16,185,129,.12);}
+
+/* TASK ROW — grid: title | priority | STATUS TOGGLE | date | actions */
+.task-row{display:grid;grid-template-columns:1fr 88px 230px 100px 72px;align-items:center;gap:12px;padding:12px 17px;border-bottom:1px solid rgba(255,255,255,.03);transition:.15s;}
+.task-row:last-child{border-bottom:none;}
+.task-row:hover{background:rgba(16,185,129,.025);}
+.task-title-cell{display:flex;flex-direction:column;gap:3px;}
+.task-title-text{font-size:.875rem;font-weight:500;}
+.task-desc{font-size:.74rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;}
+
+/* PRIORITY BADGE */
+.priority-badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font-size:.7rem;font-weight:500;}
+.p-high{background:rgba(244,63,94,.12);color:#f43f5e;}
+.p-medium{background:rgba(245,158,11,.12);color:#f59e0b;}
+.p-low{background:rgba(16,185,129,.12);color:#34d399;}
+
+/* ─── INLINE STATUS TOGGLE ─── */
+.status-toggle{display:flex;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:3px;gap:2px;}
+.stoggle-btn{flex:1;text-align:center;padding:5px 0;border-radius:6px;font-size:.7rem;font-weight:500;cursor:pointer;color:var(--muted);transition:.18s;border:none;background:transparent;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+.stoggle-btn:hover:not(.active){background:rgba(255,255,255,.04);color:var(--text);}
+.stoggle-btn.active.s-pending{background:rgba(245,158,11,.16);color:#f59e0b;}
+.stoggle-btn.active.s-in_progress{background:rgba(110,231,183,.12);color:#6ee7b7;}
+.stoggle-btn.active.s-completed{background:rgba(16,185,129,.16);color:#34d399;}
+
+.task-date{font-size:.72rem;color:var(--muted);}
+.task-actions{display:flex;gap:5px;}
+
+/* INLINE EDIT PANEL */
+.task-edit-panel{display:none;grid-column:1/-1;background:var(--card);border:1px solid var(--border);border-radius:9px;padding:16px;margin:0 0 2px;gap:12px;flex-wrap:wrap;align-items:flex-end;}
+.task-edit-panel.open{display:flex;}
+.ep-field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:140px;}
+.ep-label{font-size:.72rem;color:var(--muted);font-weight:500;}
+.ep-input{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none;transition:.2s;}
+.ep-input:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(16,185,129,.1);}
+.ep-actions{display:flex;gap:7px;margin-left:auto;}
+
+.empty-state{padding:54px 20px;text-align:center;color:var(--muted);}
+.empty-icon{font-size:2.7rem;margin-bottom:11px;}
+.empty-state p{font-size:.88rem;}
+
+/* ANALYTICS */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.a-card{background:linear-gradient(145deg,rgba(16,185,129,.06) 0%,var(--card) 100%);border:1px solid var(--border);border-radius:var(--r);padding:22px;}
+.a-card h3{font-size:.9rem;font-weight:600;margin-bottom:16px;}
+.ring-val{font-size:3rem;font-weight:600;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;}
+.ring-label{color:var(--muted);font-size:.84rem;text-align:center;margin-top:4px;}
+.mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:14px;}
+.mini-stat{text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:11px 7px;}
+.mini-val{font-size:1.3rem;font-weight:600;}
+.mini-label{font-size:.7rem;color:var(--muted);margin-top:2px;}
+.pbar-row{margin-bottom:13px;}
+.pbar-top{display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:5px;}
+.pbar-track{height:7px;background:var(--border);border-radius:4px;overflow:hidden;}
+.pbar-fill{height:100%;border-radius:4px;transition:width .65s ease;}
+.numpy-row{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;}
+
+/* LIVE FEED */
+.live-entry{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:9px;padding:10px 14px;font-size:.84rem;animation:slin .3s ease;}
+@keyframes slin{from{opacity:0;transform:translateX(10px);}to{opacity:1;transform:translateX(0);}}
+.le-icon{font-size:.95rem;flex-shrink:0;}
+.le-time{margin-left:auto;font-size:.7rem;color:var(--muted);flex-shrink:0;}
+.le-add{border-color:rgba(16,185,129,.2);}
+.le-update{border-color:rgba(110,231,183,.14);}
+.le-delete{border-color:rgba(244,63,94,.14);}
+
+/* NOTIFICATIONS */
+.notif-container{position:fixed;bottom:20px;right:20px;z-index:300;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+.notif{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:10px 14px;font-size:.84rem;pointer-events:auto;box-shadow:0 8px 24px rgba(0,0,0,.45);min-width:240px;animation:slin .3s ease;display:flex;align-items:center;gap:8px;}
+.notif-success{border-color:rgba(16,185,129,.26);}
+.notif-info{border-color:rgba(110,231,183,.16);}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.78);backdrop-filter:blur(12px);align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid rgba(16,185,129,.18);border-radius:17px;padding:32px;width:100%;max-width:460px;box-shadow:0 40px 80px rgba(0,0,0,.6);animation:mup .28s ease;position:relative;}
+@keyframes mup{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.modal h3{font-family:'DM Serif Display',serif;font-size:1.45rem;margin-bottom:20px;}
+.modal-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--muted);width:26px;height:26px;border-radius:7px;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;}
+.modal-close:hover{color:var(--text);border-color:var(--accent);}
+.form-group{margin-bottom:13px;}
+label{display:block;font-size:.75rem;color:var(--muted);margin-bottom:5px;font-weight:500;}
+input,textarea{width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.875rem;outline:none;transition:.2s;}
+input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(16,185,129,.1);}
+textarea{resize:vertical;min-height:72px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.modal .btn-primary{width:100%;justify-content:center;padding:12px;margin-top:5px;}
+.error-msg{color:#f43f5e;font-size:.78rem;margin-top:6px;min-height:16px;}
+
+@media(max-width:900px){
+  .task-row{grid-template-columns:1fr 88px 1fr 60px;}
+  .task-date{display:none;}
+}
+@media(max-width:700px){
+  .sidebar{display:none;}.main{margin-left:0;}
+  .task-row{grid-template-columns:1fr 180px 36px;}
+  .priority-badge{display:none;}
+  .content{padding:16px;}
+  .analytics-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo"><div class="logo-mark">⚒️</div>Task<em>Forge</em></div>
+  <div class="live-badge"><div class="live-dot"></div> Connected Live</div>
+  <div class="nav-sec">Workspace</div>
+  <div class="nav-item active" onclick="showView('tasks')"><span class="nav-icon">📋</span> Tasks</div>
+  <div class="nav-item" onclick="showView('analytics')"><span class="nav-icon">📊</span> Analytics</div>
+  <div class="nav-item" onclick="showView('live')"><span class="nav-icon">🟢</span> Live Feed</div>
+  <div class="sb-bottom">
+    <div class="user-card">
+      <div class="avatar" id="avatarLetter">U</div>
+      <div class="user-info"><div class="user-name" id="sidebarUsername">{{ username }}</div></div>
+      <button class="logout-btn" onclick="doLogout()" title="Logout">⏻</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <h1 id="pageTitle">My Tasks</h1>
+    <div class="topbar-right">
+      <span class="topbar-user">Hi, <strong id="topUsername">{{ username }}</strong></span>
+      <button class="btn btn-primary" onclick="openAddModal()">+ New Task</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- TASKS VIEW -->
+    <div id="view-tasks">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-val" id="s-total">—</div><div class="stat-label">Total Tasks</div><div class="stat-bar"><div class="stat-fill" style="width:100%"></div></div></div>
+        <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-val" id="s-completed">—</div><div class="stat-label">Completed</div><div class="stat-bar"><div class="stat-fill" id="sb-c" style="width:0%"></div></div></div>
+        <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-val" id="s-pending">—</div><div class="stat-label">Pending</div><div class="stat-bar"><div class="stat-fill" id="sb-p" style="width:0%;background:#f59e0b"></div></div></div>
+        <div class="stat-card"><div class="stat-icon">🔥</div><div class="stat-val" id="s-pct">—</div><div class="stat-label">Completion %</div><div class="stat-bar"><div class="stat-fill" id="sb-pct" style="width:0%"></div></div></div>
+      </div>
+
+      <div class="filters">
+        <span class="filter-label">Filter:</span>
+        <select id="filterStatus" onchange="loadTasks()">
+          <option value="">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="in_progress">In Progress</option>
+          <option value="completed">Completed</option>
+        </select>
+        <select id="filterPriority" onchange="loadTasks()">
+          <option value="">All Priority</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+
+      <div class="tasks-section">
+        <div class="tasks-header">
+          <h3>Task List</h3>
+          <span class="tasks-count" id="taskCount">0 tasks</span>
+        </div>
+        <div id="taskList"></div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS VIEW -->
+    <div id="view-analytics" style="display:none">
+      <div class="analytics-grid">
+        <div class="a-card">
+          <h3>Completion Overview</h3>
+          <div class="ring-val" id="a-pct">0%</div>
+          <div class="ring-label">Tasks Completed</div>
+          <div class="mini-stats">
+            <div class="mini-stat"><div class="mini-val" id="a-total" style="color:var(--a2)">0</div><div class="mini-label">Total</div></div>
+            <div class="mini-stat"><div class="mini-val" id="a-done" style="color:#34d399">0</div><div class="mini-label">Done</div></div>
+            <div class="mini-stat"><div class="mini-val" id="a-pend" style="color:#f59e0b">0</div><div class="mini-label">Pending</div></div>
+          </div>
+        </div>
+        <div class="a-card">
+          <h3>Priority Distribution</h3>
+          <div id="priorityBars"><p style="color:var(--muted);font-size:.84rem;">No data yet</p></div>
+        </div>
+        <div class="a-card" style="grid-column:span 2">
+          <h3>NumPy Computed Stats</h3>
+          <div class="numpy-row">
+            <div class="mini-stat"><div class="mini-val" id="a-prog" style="color:var(--a3)">0</div><div class="mini-label">In Progress</div></div>
+            <div class="mini-stat"><div class="mini-val" id="a-avg">0</div><div class="mini-label">Avg / Day</div></div>
+            <div class="mini-stat"><div class="mini-val" id="a-pct2" style="color:var(--a2)">0%</div><div class="mini-label">Completion %</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIVE FEED VIEW -->
+    <div id="view-live" style="display:none">
+      <div class="tasks-section">
+        <div class="tasks-header"><h3>🟢 Real-time WebSocket Feed</h3><span class="tasks-count">Live Events</span></div>
+        <div id="liveFeed" style="padding:14px;display:flex;flex-direction:column;gap:8px;max-height:520px;overflow-y:auto;">
+          <p style="color:var(--muted);font-size:.84rem;text-align:center;padding:18px 0;">Waiting for events...</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="notif-container" id="notifContainer"></div>
+
+<!-- ADD TASK MODAL -->
+<div class="modal-overlay" id="taskModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeTaskModal()">×</button>
+    <h3 id="modalTitle">New Task</h3>
+    <div class="form-group"><label>Title *</label><input type="text" id="t-title" placeholder="What needs to be done?"/></div>
+    <div class="form-group"><label>Description</label><textarea id="t-desc" placeholder="Add details..."></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>Priority</label>
+        <select id="t-priority"><option value="low">🟢 Low</option><option value="medium" selected>🟡 Medium</option><option value="high">🔴 High</option></select>
+      </div>
+      <div class="form-group"><label>Status</label>
+        <select id="t-status"><option value="pending">Pending</option><option value="in_progress">In Progress</option><option value="completed">Completed</option></select>
+      </div>
+    </div>
+    <div class="error-msg" id="task-error"></div>
+    <button class="btn btn-primary" onclick="saveTask()">Save Task →</button>
+  </div>
+</div>
+
+<script>
+// ─── State ───────────────────────────────────
+const username = "{{ username }}";
+document.getElementById('avatarLetter').textContent = username[0].toUpperCase();
+
+// ─── WebSocket ────────────────────────────────
+// Room joining now happens server-side on 'connect' using Flask session.
+// No need to emit 'join' from the client — that was the root cause of
+// real-time not working (user_id was never passed correctly).
+const socket = io({
+  transports: ['websocket', 'polling'],   // prefer native WebSocket first
+  reconnection: true,
+  reconnectionAttempts: 5,
+  reconnectionDelay: 1000,
+});
+
+socket.on('connect', () => {
+  addFeed('🔌', 'Connected to WebSocket server', 'system');
+  document.querySelector('.live-badge').style.opacity = '1';
+});
+
+socket.on('disconnect', () => {
+  addFeed('⚠️', 'Disconnected — reconnecting...', 'system');
+  document.querySelector('.live-badge').style.opacity = '0.4';
+});
+
+socket.on('connect_error', (err) => {
+  console.error('Socket connect error:', err.message);
+});
+
+// Server confirms we are in our private room
+socket.on('joined', (data) => {
+  console.log('Joined room:', data.room);
+});
+
+socket.on('task_added',       task => { loadTasks(); showNotif('✅ Task added: ' + task.title, 'success'); addFeed('➕', `Task added — "${task.title}"`, 'add'); });
+socket.on('task_updated',     task => { loadTasks(); addFeed('✏️', `Task updated — "${task.title}"`, 'update'); });
+socket.on('task_deleted',     data => { loadTasks(); addFeed('🗑️', `Task #${data.id} deleted`, 'delete'); });
+socket.on('analytics_update', data => { updateStats(data); updateAnalyticsView(data); });
+
+// ─── Views ────────────────────────────────────
+function showView(v) {
+  ['tasks','analytics','live'].forEach(n => { document.getElementById('view-'+n).style.display = n===v ? '' : 'none'; });
+  document.querySelectorAll('.nav-item').forEach((el,i) => el.classList.toggle('active', ['tasks','analytics','live'][i]===v));
+  document.getElementById('pageTitle').textContent = {tasks:'My Tasks', analytics:'Analytics', live:'Live Feed'}[v];
+  if (v==='analytics') loadAnalytics();
+}
+
+// ─── Tasks ────────────────────────────────────
+async function loadTasks() {
+  const status   = document.getElementById('filterStatus').value;
+  const priority = document.getElementById('filterPriority').value;
+  let url = '/api/tasks?';
+  if (status)   url += `status=${status}&`;
+  if (priority) url += `priority=${priority}&`;
+  const tasks = await fetch(url).then(r=>r.json());
+  renderTasks(tasks);
+}
+
+function renderTasks(tasks) {
+  const list = document.getElementById('taskList');
+  document.getElementById('taskCount').textContent = tasks.length + ' task' + (tasks.length!==1?'s':'');
+  if (!tasks.length) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>No tasks yet — create your first one!</p></div>`;
+    return;
+  }
+  list.innerHTML = tasks.map(t => {
+    const statuses = [
+      {val:'pending',    label:'Pending'},
+      {val:'in_progress',label:'Active'},
+      {val:'completed',  label:'Done'}
+    ];
+    const toggleBtns = statuses.map(s =>
+      `<button class="stoggle-btn ${s.val===t.status?'active s-'+t.status:''}" onclick="quickStatus(${t.id},'${s.val}',this)">${s.label}</button>`
+    ).join('');
+
+    return `
+    <div class="task-row" id="row-${t.id}">
+      <div class="task-title-cell">
+        <span class="task-title-text">${esc(t.title)}</span>
+        <span class="task-desc">${esc(t.description||'—')}</span>
+      </div>
+      <span class="priority-badge p-${t.priority}">${t.priority}</span>
+      <div class="status-toggle" id="toggle-${t.id}">${toggleBtns}</div>
+      <span class="task-date">${new Date(t.created_at).toLocaleDateString()}</span>
+      <div class="task-actions">
+        <button class="btn btn-ghost btn-icon" onclick="toggleEditPanel(${t.id})" title="Edit">✏️</button>
+        <button class="btn btn-danger btn-icon" onclick="deleteTask(${t.id})" title="Delete">🗑️</button>
+      </div>
+    </div>
+    <div class="task-edit-panel" id="edit-${t.id}">
+      <div class="ep-field" style="flex:2">
+        <span class="ep-label">Title</span>
+        <input class="ep-input" id="et-title-${t.id}" value="${esc(t.title)}" placeholder="Title"/>
+      </div>
+      <div class="ep-field" style="flex:3">
+        <span class="ep-label">Description</span>
+        <input class="ep-input" id="et-desc-${t.id}" value="${esc(t.description||'')}" placeholder="Description"/>
+      </div>
+      <div class="ep-field">
+        <span class="ep-label">Priority</span>
+        <select class="ep-input" id="et-pri-${t.id}">
+          <option value="low" ${t.priority==='low'?'selected':''}>Low</option>
+          <option value="medium" ${t.priority==='medium'?'selected':''}>Medium</option>
+          <option value="high" ${t.priority==='high'?'selected':''}>High</option>
+        </select>
+      </div>
+      <div class="ep-actions">
+        <button class="btn btn-primary btn-sm" onclick="saveInlineEdit(${t.id})">Save</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleEditPanel(${t.id})">Cancel</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Quick status change — no modal needed
+async function quickStatus(taskId, newStatus, clickedBtn) {
+  const toggleEl = document.getElementById('toggle-'+taskId);
+  // Optimistic UI
+  toggleEl.querySelectorAll('.stoggle-btn').forEach(b => {
+    b.classList.remove('active','s-pending','s-in_progress','s-completed');
+  });
+  clickedBtn.classList.add('active','s-'+newStatus);
+
+  const r = await fetch(`/api/tasks/${taskId}`, {
+    method:'PUT',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({status:newStatus})
+  });
+  if (!r.ok) { loadTasks(); showNotif('❌ Update failed','info'); }
+}
+
+// Inline edit panel toggle
+function toggleEditPanel(taskId) {
+  const panel = document.getElementById('edit-'+taskId);
+  panel.classList.toggle('open');
+}
+
+async function saveInlineEdit(taskId) {
+  const title       = document.getElementById('et-title-'+taskId).value.trim();
+  const description = document.getElementById('et-desc-'+taskId).value.trim();
+  const priority    = document.getElementById('et-pri-'+taskId).value;
+  if (!title) { showNotif('❌ Title is required','info'); return; }
+  const r = await fetch(`/api/tasks/${taskId}`, {
+    method:'PUT',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({title,description,priority})
+  });
+  if (r.ok) { toggleEditPanel(taskId); showNotif('✅ Task updated','success'); }
+}
+
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+
+async function deleteTask(id) {
+  if (!confirm('Delete this task?')) return;
+  await fetch(`/api/tasks/${id}`,{method:'DELETE'});
+  showNotif('🗑️ Task deleted','info');
+}
+
+// ─── Add Task Modal ────────────────────────────
+function openAddModal(){
+  document.getElementById('modalTitle').textContent='New Task';
+  ['t-title','t-desc'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('t-priority').value='medium';
+  document.getElementById('t-status').value='pending';
+  document.getElementById('task-error').textContent='';
+  document.getElementById('taskModal').classList.add('open');
+  document.getElementById('t-title').focus();
+}
+function closeTaskModal(){document.getElementById('taskModal').classList.remove('open');}
+async function saveTask(){
+  const title=document.getElementById('t-title').value.trim();
+  const description=document.getElementById('t-desc').value.trim();
+  const priority=document.getElementById('t-priority').value;
+  const status=document.getElementById('t-status').value;
+  document.getElementById('task-error').textContent='';
+  if(!title){document.getElementById('task-error').textContent='Title is required';return;}
+  const r=await fetch('/api/tasks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,description,priority,status})});
+  const d=await r.json();
+  if(!r.ok){document.getElementById('task-error').textContent=d.error;return;}
+  closeTaskModal();
+}
+
+// ─── Analytics ────────────────────────────────
+async function loadAnalytics(){
+  const data=await fetch('/api/analytics').then(r=>r.json());
+  updateAnalyticsView(data);
+}
+function updateStats(data){
+  document.getElementById('s-total').textContent=data.total;
+  document.getElementById('s-completed').textContent=data.completed;
+  document.getElementById('s-pending').textContent=data.pending;
+  document.getElementById('s-pct').textContent=data.completion_pct+'%';
+  const t=data.total||1;
+  document.getElementById('sb-c').style.width=(data.completed/t*100)+'%';
+  document.getElementById('sb-p').style.width=(data.pending/t*100)+'%';
+  document.getElementById('sb-pct').style.width=data.completion_pct+'%';
+}
+function updateAnalyticsView(data){
+  document.getElementById('a-pct').textContent=data.completion_pct+'%';
+  document.getElementById('a-pct2').textContent=data.completion_pct+'%';
+  document.getElementById('a-total').textContent=data.total;
+  document.getElementById('a-done').textContent=data.completed;
+  document.getElementById('a-pend').textContent=data.pending;
+  document.getElementById('a-prog').textContent=data.in_progress;
+  document.getElementById('a-avg').textContent=data.avg_tasks_per_day;
+  const colors={high:'#f43f5e',medium:'#f59e0b',low:'#34d399'};
+  const dist=data.priority_dist||{};
+  const total=Object.values(dist).reduce((a,b)=>a+b,0)||1;
+  document.getElementById('priorityBars').innerHTML=Object.entries(dist).map(([k,v])=>`
+    <div class="pbar-row">
+      <div class="pbar-top"><span>${k}</span><span style="color:var(--muted)">${v}</span></div>
+      <div class="pbar-track"><div class="pbar-fill" style="width:${v/total*100}%;background:${colors[k]||'var(--accent)'}"></div></div>
+    </div>`).join('')||'<p style="color:var(--muted);font-size:.84rem">No data yet</p>';
+}
+
+// ─── Live Feed ────────────────────────────────
+function addFeed(icon,msg,type){
+  const feed=document.getElementById('liveFeed');
+  if(feed.querySelector('p'))feed.innerHTML='';
+  const el=document.createElement('div');
+  el.className=`live-entry le-${type}`;
+  el.innerHTML=`<span class="le-icon">${icon}</span><span>${msg}</span><span class="le-time">${new Date().toLocaleTimeString()}</span>`;
+  feed.prepend(el);
+}
+
+// ─── Notifications ────────────────────────────
+function showNotif(msg,type='info'){
+  const c=document.getElementById('notifContainer');
+  const n=document.createElement('div');
+  n.className=`notif notif-${type}`;
+  n.innerHTML=`<span>${msg}</span>`;
+  c.appendChild(n);
+  setTimeout(()=>n.remove(),3200);
+}
+
+// ─── Logout ───────────────────────────────────
+async function doLogout(){await fetch('/api/logout',{method:'POST'});window.location='/';}
+
+// ─── Init ─────────────────────────────────────
+document.getElementById('taskModal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeTaskModal();});
+loadTasks();
+fetch('/api/analytics').then(r=>r.json()).then(d=>{updateStats(d);updateAnalyticsView(d);});
+</script>
+</body>
+</html>
