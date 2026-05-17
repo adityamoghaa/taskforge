@@ -353,9 +353,11 @@ def on_disconnect():
     pass  # Flask-SocketIO handles room leave on disconnect automatically
 
 # ─── Entry point ───────────────────────────────────────────────────────────
+# Called by both gunicorn and direct python run
+with app.app_context():
+    init_db()
 
 if __name__ == "__main__":
-    init_db()
     port = int(os.getenv("PORT", 5000))
     socketio.run(
         app,
