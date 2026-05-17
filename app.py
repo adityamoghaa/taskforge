@@ -21,17 +21,22 @@ app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
 
 # FIX 1: explicit async_mode — without this SocketIO silently falls back
 #         to HTTP polling and real-time push never works
+
 socketio = SocketIO(
     app,
     cors_allowed_origins="*",
-    async_mode="eventlet",
+    async_mode="gevent",
     logger=False,
     engineio_logger=False,
 )
-
 # ─── Database ──────────────────────────────────────────────────────────────
 
 def get_db():
+    database_url = os.getenv("DATABASE_URL")
+    if database_url:
+        # Supabase requires SSL
+        return psycopg2.connect(database_url, sslmode="require")
+    # local fallback
     return psycopg2.connect(
         host=os.getenv("DB_HOST", "localhost"),
         database=os.getenv("DB_NAME", "taskforge"),
@@ -351,5 +356,11 @@ def on_disconnect():
 
 if __name__ == "__main__":
     init_db()
-    # FIX 3: allow_unsafe_werkzeug required when eventlet monkey-patches stdlib
-    socketio.run(app, debug=True, host="0.0.0.0", port=5000, allow_unsafe_werkzeug=True)
+    port = int(os.getenv("PORT", 5000))
+    socketio.run(
+        app,
+        debug=False,
+        host="0.0.0.0",
+        port=port,
+        allow_unsafe_werkzeug=True
+    )
